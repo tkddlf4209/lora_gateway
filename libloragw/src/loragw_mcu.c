@@ -187,29 +187,46 @@ int read_msg(int fd, int waitMs, bool clear){
     return 0;
 }
 
-uint8_t* datahex(char* payload) {
+uint8_t* str_to_hex(char* payload) {
 
     if(payload == NULL) 
        return NULL;
 
     size_t slength = strlen(payload);
     size_t dlength = slength / 2;
-    printf("datahex payload %s ,%d ,%d ,%c ,%c\n",payload,slength,dlength,payload[0],payload[1]);
+    //printf("str_to_hex payload %s ,%d ,%d\n",payload,slength,dlength);
    
     uint8_t* data = malloc(dlength);
     memset(data, 0, dlength);
 
     size_t index = 0;
+    char hex[3];
+    hex[2] = 0;
     while (index < dlength) {
-        char hex[2];
-        strncpy(hex,(index*2),(index*2)+1);
-        printf("hex# : %s\n",hex);
-        //data[index] += hex; 
+        strncpy(hex,payload+(index*2),2);
+        //printf("hex# : %s\n",hex);
+        data[index] =strtol(hex, NULL, 16);
         index++;
     }
 
     return data;
 }
+
+// struct lgw_pkt_rx_s {
+//     uint32_t            freq_hz;        /*!> central frequency of the IF chain */
+//     uint8_t             channel;        /*!> by which IF chain was packet received */
+//     uint8_t             status;         /*!> status of the received packet */
+//     uint32_t            count_us;       /*!> internal concentrator counter for timestamping, 1 microsecond resolution */
+//     int32_t             foff_hz;        /*!> frequency error in Hz */
+//     e_modulation        modulation;     /*!> modulation used by the packet */
+//     e_bandwidth         bandwidth;      /*!> modulation bandwidth (LoRa only) */
+//     e_spreading_factor  datarate;       /*!> RX datarate of the packet (SF for LoRa) */
+//     e_coding_rate       coderate;       /*!> error-correcting code of the packet (LoRa only) */
+//     float               rssi;           /*!> average packet RSSI in dB */
+//     float               snr;            /*!> average packet SNR, in dB (LoRa only) */
+//     uint16_t            size;           /*!> payload size in bytes */
+//     uint8_t             payload[256];   /*!> buffer containing the payload */
+// };
 
 int read_p2p_pkt(int fd, struct lgw_pkt_rx_s * pkt, uint8_t * nb_pkt){
     
@@ -219,6 +236,7 @@ int read_p2p_pkt(int fd, struct lgw_pkt_rx_s * pkt, uint8_t * nb_pkt){
     memset(uartInput, 0, UART_INPUT_MAX_SIZE+1);
     wait_ms(1000);
 
+    *nb_pkt = 0;
     int packet_count = 0;
     struct lgw_pkt_rx_s * p;
 
@@ -228,6 +246,7 @@ int read_p2p_pkt(int fd, struct lgw_pkt_rx_s * pkt, uint8_t * nb_pkt){
             if ('\n' == uartInput[uartInputIndex]){
                 //printf("%s", uartInput);
                 if (strstr(uartInput, "at+recv=") != NULL) {  // 데이터 수신
+                    printf("%s", uartInput);
                     p = &pkt[packet_count];
                     memset(pkt, 0, sizeof (struct lgw_pkt_rx_s));
 
@@ -236,10 +255,10 @@ int read_p2p_pkt(int fd, struct lgw_pkt_rx_s * pkt, uint8_t * nb_pkt){
                     pkt->count_us = 0;
                     pkt->foff_hz = 0;
 
-                    int rssi = 0;
-                    int snr = 0;
-                    int size = 0;
-
+                    float rssi = 0;
+                    float snr = 0;
+                    uint16_t size = 0;
+                    uint8_t* payload;
                     char temp[32], *pt1;
                     char *deli = "=,:";
 
@@ -254,31 +273,32 @@ int read_p2p_pkt(int fd, struct lgw_pkt_rx_s * pkt, uint8_t * nb_pkt){
                                 // at+recv
                                 break;
                             case 1:
-                                rssi = atoi(pt1);
+                                rssi = atof(pt1);
                                 break;
                             case 2:
-                                snr = atoi(pt1);
+                                snr = atof(pt1);
                                 break;
                             case 3:
-                                size = atoi(pt1);
+                                size = (uint16_t)atoi(pt1);
                                 break;
                             case 4:
                                 // payload
-                                printf("paylaod : %s\n", pt1);
-                                printf("payload HEX : %x\n",datahex(pt1));
+                                printf("##### paylaod : %s\n", pt1);
+                                payload = str_to_hex(pt1);
                                 break;
                         }
 
                         pt1 = strtok(NULL, deli);
                         pos++;
                     }
-                    printf("result %d, %d, %d\n",rssi,snr,size);
+                    //printf("result %d, %d, %d\n",rssi,snr,size);
 
                     // 가져온 값 사용
-                    pkt->snr = 0;
-                    pkt->rssi = 0;
-                    pkt->size = 0;
-                    //memcpy(pkt->payload, payload , pkt->size);
+                    pkt->snr = snr;
+                    pkt->rssi = rssi;
+                    pkt->size = size;
+                    memcpy(pkt->payload, payload , pkt->size);
+                    printf("#### RECV RAK811 DATA %f, %f, %d, %s\n",pkt->rssi,pkt->snr,pkt->size,pkt->payload);
                     packet_count++;
                     
                 }
@@ -292,6 +312,7 @@ int read_p2p_pkt(int fd, struct lgw_pkt_rx_s * pkt, uint8_t * nb_pkt){
             }
     }
     *nb_pkt += packet_count;
+    printf("recv_packet count : %d\n",*nb_pkt);
     return 0;
 }
 
@@ -1179,9 +1200,6 @@ int mcu_receive(int fd, uint8_t max_pkt, struct lgw_pkt_rx_s * pkt, uint8_t * nb
     //for문 돌림
     //pkt[i] 에 값을 넣음
 
-    while(true){
-        read_p2p_pkt(fd,pkt,nb_pkt);
-    }
 
 
     for (i = 0; i < rx_msg.nb_msg; i++) {

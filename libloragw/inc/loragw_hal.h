@@ -53,6 +53,13 @@ typedef enum {
 } e_tx_mode;
 
 typedef enum {
+    BW_500KHZ  = 1,
+    BW_250KHZ  = 2,
+    BW_125KHZ  = 3,
+    BW_62K5HZ  = 4,
+    BW_31K2HZ  = 5,
+    BW_15K6HZ  = 6,
+    BW_7K8HZ   = 7,
     BW_200KHZ  = 8,
     BW_400KHZ  = 10,
     BW_800KHZ  = 12,

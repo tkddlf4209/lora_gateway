@@ -260,10 +260,20 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s * pkt_data) {
         return -1;
     }
 
+    // ## test ##
+    // while(true){
+    //     sleep(15);
+    //     read_p2p_pkt(fd,pkt,nb_pkt);
+    // }
+
+    // read pkt
+    read_p2p_pkt(mcu_fd,pkt_data,&nb_pkt_fetch);
+    
+
     /* Get packets from the concentrator */
-    if (mcu_receive(mcu_fd, max_pkt, pkt_data, &nb_pkt_fetch) != 0) {
-        return -1;
-    }
+    // if (mcu_receive(mcu_fd, max_pkt, pkt_data, &nb_pkt_fetch) != 0) {
+    //     return -1;
+    // }
 
     /* Get RX status (for info) */
     // if (mcu_get_status(mcu_fd, &status) != 0) {
@@ -278,6 +288,15 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s * pkt_data) {
     //         DEBUG_PRINTF("INFO: [%d] Number of packets received with CRC ERR: %u\n", i, status.rx_crc_err[i]);
     //     }
     // }
+
+                // case  5: txpkt.datarate = DR_LORA_SF5;  break;
+                // case  6: txpkt.datarate = DR_LORA_SF6;  break;
+                // case  7: txpkt.datarate = DR_LORA_SF7;  break;
+                // case  8: txpkt.datarate = DR_LORA_SF8;  break;
+                // case  9: txpkt.datarate = DR_LORA_SF9;  break;
+                // case 10: txpkt.datarate = DR_LORA_SF10; break;
+                // case 11: txpkt.datarate = DR_LORA_SF11; break;
+                // case 12: txpkt.datarate = DR_LORA_SF12; break;  SF12/125khz
 
     /* Update missing metadata */
     for (i = 0; i < nb_pkt_fetch; i++) {
@@ -378,17 +397,18 @@ int lgw_get_trigcnt(uint32_t * trig_cnt_us) {
     CHECK_NULL(trig_cnt_us);
 
     /* check if the concentrator is running */
-    if (lgw_is_started == false) {
-        printf("ERROR: CONCENTRATOR IS NOT RUNNING\n");
-        return -1;
-    }
+    // if (lgw_is_started == false) {
+    //     printf("ERROR: CONCENTRATOR IS NOT RUNNING\n");
+    //     return -1;
+    // }
 
     /* Get counter from status */
-    if (mcu_get_status(mcu_fd, &status) == -1) {
-        return -1;
-    }
+    // if (mcu_get_status(mcu_fd, &status) == -1) {
+    //     return -1;
+    // }
 
-    *trig_cnt_us = status.pps_time_us;
+    //*trig_cnt_us = status.pps_time_us;
+    *trig_cnt_us = 1;
 
     return 0;
 }
@@ -401,17 +421,18 @@ int lgw_get_instcnt(uint32_t * inst_cnt_us) {
     CHECK_NULL(inst_cnt_us);
 
     /* check if the concentrator is running */
-    if (lgw_is_started == false) {
-        printf("ERROR: CONCENTRATOR IS NOT RUNNING\n");
-        return -1;
-    }
+    // if (lgw_is_started == false) {
+    //     printf("ERROR: CONCENTRATOR IS NOT RUNNING\n");
+    //     return -1;
+    // }
 
     /* Get counter from status */
-    if (mcu_get_status(mcu_fd, &status) == -1) {
-        return -1;
-    }
+    // if (mcu_get_status(mcu_fd, &status) == -1) {
+    //     return -1;
+    // }
 
-    *inst_cnt_us = status.precise_time_us;
+    //*inst_cnt_us = status.precise_time_us;
+    *inst_cnt_us = 2;
 
     return 0;
 }
@@ -462,6 +483,8 @@ int lgw_get_eui(uint64_t * eui) {
     return 0;
 }
 
+
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 int lgw_get_temperature(float * temperature, e_temperature_src * source) {
@@ -470,19 +493,24 @@ int lgw_get_temperature(float * temperature, e_temperature_src * source) {
     CHECK_NULL(temperature);
 
     /* check if the concentrator is running */
-    if (lgw_is_started == false) {
-        printf("ERROR: CONCENTRATOR IS NOT RUNNING\n");
-        return -1;
-    }
+    // if (lgw_is_started == false) {
+    //     printf("ERROR: CONCENTRATOR IS NOT RUNNING\n");
+    //     return -1;
+    // }
 
     /* Get temperature from status */
-    if (mcu_get_status(mcu_fd, &status) == -1) {
-        return -1;
-    }
+    // if (mcu_get_status(mcu_fd, &status) == -1) {
+    //     return -1;
+    // }
 
-    *temperature = status.temperature.value;
+    // *temperature = status.temperature.value;
+    // if (source != NULL) {
+    //     *source = status.temperature.source;
+    // }
+
+     *temperature = 24;
     if (source != NULL) {
-        *source = status.temperature.source;
+        *source = 28;
     }
 
     return 0;

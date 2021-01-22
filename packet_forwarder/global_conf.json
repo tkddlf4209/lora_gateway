@@ -5,35 +5,22 @@
         "antenna_gain": 0, /* antenna gain, in dBi */
         "chan_0": {
             "enable": true,
-            "freq": 2403000000,
-            "bandwidth": 812000,
+            "freq": 922100000,
+            "bandwidth": 125000,
             "spread_factor": 12,
-            "rssi_offset": 0.0
-        },
-        "chan_1": {
-            "enable": true,
-            "freq": 2479000000,
-            "bandwidth": 812000,
-            "spread_factor": 12,
-            "rssi_offset": 0.0
-        },
-        "chan_2": {
-            "enable": true,
-            "freq": 2425000000,
-            "bandwidth": 812000,
-            "spread_factor": 12,
-            "rssi_offset": 0.0
+            "rssi_offset": -166.0
         },
         "tx": {
             "enable": true,
-            "tx_freq_min": 2400000000,
-            "tx_freq_max": 2483500000
+            "tx_freq_min": 922100000,
+            "tx_freq_max": 922100000
         }
     },
     "gateway_conf": {
         "gateway_ID": "0102030405060708",
         /* change with default server address/ports */
         "server_address": "localhost",
+        //"server_address": "192.168.10.7",
         "serv_port_up": 1700,
         "serv_port_down": 1700,
         /* adjust the following parameters for your network */

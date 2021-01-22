@@ -319,6 +319,10 @@ static int parse_radio_configuration(const char * conf_file) {
                 case 812000:
                     rxconf.bandwidth = BW_800KHZ;
                     break;
+                case 125000:
+                    rxconf.bandwidth = BW_125KHZ;
+                    break;
+                    
                 default:
                     MSG("ERROR: bandwidth %u not supported\n", bw);
                     return -1;
@@ -1259,75 +1263,102 @@ void thread_up(void) {
                     exit(EXIT_FAILURE);
             }
 
+            
+
             /* Packet modulation, 13-14 useful chars */
             if (p->modulation == MOD_LORA) {
                 memcpy((void *)(buff_up + buff_index), (void *)",\"modu\":\"LORA\"", 14);
                 buff_index += 14;
 
+                // set datarate
+                memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF12", 13);
+                buff_index += 13;
+
+                // set bandwidth
+                memcpy((void *)(buff_up + buff_index), (void *)"BW125\"", 6);
+                buff_index += 6;
+                
+
+                memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/5\"", 13);
+                buff_index += 13;
+
                 /* Lora datarate & bandwidth, 16-19 useful chars */
-                switch (p->datarate) {
-                    case DR_LORA_SF5:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF5", 12);
-                        buff_index += 12;
-                        break;
-                    case DR_LORA_SF6:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF6", 12);
-                        buff_index += 12;
-                        break;
-                    case DR_LORA_SF7:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF7", 12);
-                        buff_index += 12;
-                        break;
-                    case DR_LORA_SF8:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF8", 12);
-                        buff_index += 12;
-                        break;
-                    case DR_LORA_SF9:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF9", 12);
-                        buff_index += 12;
-                        break;
-                    case DR_LORA_SF10:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF10", 13);
-                        buff_index += 13;
-                        break;
-                    case DR_LORA_SF11:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF11", 13);
-                        buff_index += 13;
-                        break;
-                    case DR_LORA_SF12:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF12", 13);
-                        buff_index += 13;
-                        break;
-                    default:
-                        MSG("ERROR: [up] lora packet with unknown datarate 0x%02X\n", p->datarate);
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF?", 12);
-                        buff_index += 12;
-                        exit(EXIT_FAILURE);
-                }
-                switch (p->bandwidth) {
-                    case BW_800KHZ:
-                        memcpy((void *)(buff_up + buff_index), (void *)"BW812\"", 6);
-                        buff_index += 6;
-                        break;
-                    default:
-                        MSG("ERROR: [up] lora packet with unknown bandwidth 0x%02X\n", p->bandwidth);
-                        memcpy((void *)(buff_up + buff_index), (void *)"BW?\"", 4);
-                        buff_index += 4;
-                        exit(EXIT_FAILURE);
-                }
+                // switch (p->datarate) {
+                //     case DR_LORA_SF5:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF5", 12);
+                //         buff_index += 12;
+                //         break;
+                //     case DR_LORA_SF6:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF6", 12);
+                //         buff_index += 12;
+                //         break;
+                //     case DR_LORA_SF7:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF7", 12);
+                //         buff_index += 12;
+                //         break;
+                //     case DR_LORA_SF8:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF8", 12);
+                //         buff_index += 12;
+                //         break;
+                //     case DR_LORA_SF9:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF9", 12);
+                //         buff_index += 12;
+                //         break;
+                //     case DR_LORA_SF10:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF10", 13);
+                //         buff_index += 13;
+                //         break;
+                //     case DR_LORA_SF11:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF11", 13);
+                //         buff_index += 13;
+                //         break;
+                //     case DR_LORA_SF12:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF12", 13);
+                //         buff_index += 13;
+                //         break;
+                //     default:
+                //         MSG("ERROR: [up] lora packet with unknown datarate 0x%02X\n", p->datarate);
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF?", 12);
+                //         buff_index += 12;
+                //         exit(EXIT_FAILURE);
+                // }
+
+                // switch (p->bandwidth) {
+                //     case BW_125KHZ:
+                //         memcpy((void *)(buff_up + buff_index), (void *)"BW125\"", 6);
+                //         buff_index += 6;
+                //         break;
+                //     case BW_250KHZ:
+                //         memcpy((void *)(buff_up + buff_index), (void *)"BW250\"", 6);
+                //         buff_index += 6;
+                //         break;
+                //     case BW_500KHZ:
+                //         memcpy((void *)(buff_up + buff_index), (void *)"BW500\"", 6);
+                //         buff_index += 6;
+                //         break;
+                //     case BW_800KHZ:
+                //         memcpy((void *)(buff_up + buff_index), (void *)"BW812\"", 6);
+                //         buff_index += 6;
+                //         break;
+                //     default:
+                //         MSG("ERROR: [up] lora packet with unknown bandwidth 0x%02X\n", p->bandwidth);
+                //         memcpy((void *)(buff_up + buff_index), (void *)"BW?\"", 4);
+                //         buff_index += 4;
+                //         exit(EXIT_FAILURE);
+                // }
 
                 /* Packet ECC coding rate, 11-13 useful chars */
-                switch (p->coderate) {
-                    case CR_LORA_LI_4_8:
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/8LI\"", 15);
-                        buff_index += 15;
-                        break;
-                    default:
-                        MSG("ERROR: [up] lora packet with unknown coderate 0x%02X\n", p->coderate);
-                        memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"?\"", 11);
-                        buff_index += 11;
-                        exit(EXIT_FAILURE);
-                }
+                // switch (p->coderate) {
+                //     case CR_LORA_LI_4_8:
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/8LI\"", 15);
+                //         buff_index += 15;
+                //         break;
+                //     default:
+                //         MSG("ERROR: [up] lora packet with unknown coderate 0x%02X\n", p->coderate);
+                //         memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"?\"", 11);
+                //         buff_index += 11;
+                //         exit(EXIT_FAILURE);
+                // }
 
                 /* Lora SNR */
                 j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index, ",\"lsnr\":%.1f", p->snr);
@@ -1361,6 +1392,8 @@ void thread_up(void) {
                 MSG("ERROR: [up] bin_to_b64 failed line %u\n", (__LINE__ - 5));
                 exit(EXIT_FAILURE);
             }
+            
+            printf("TEST ################################\n");
             buff_up[buff_index] = '"';
             ++buff_index;
 
@@ -1381,10 +1414,12 @@ void thread_up(void) {
 
         /* restart fetch sequence without sending empty JSON if all packets have been filtered out */
         if (pkt_in_dgram == 0) {
+                printf("##########################################0\n");
             if (send_report == true) {
                 /* need to clean up the beginning of the payload */
                 buff_index -= 8; /* removes "rxpk":[ */
             } else {
+                printf("##########################################1\n");
                 /* all packet have been filtered out and no report, restart loop */
                 continue;
             }
@@ -1399,6 +1434,7 @@ void thread_up(void) {
             }
         }
 
+        printf("##########################################2\n");
         /* add status report if a new one is available */
         if (send_report == true) {
             pthread_mutex_lock(&mx_stat_rep);
